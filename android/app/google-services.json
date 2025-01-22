@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "649354724593",
+    "project_id": "youth-guide-9f516",
+    "storage_bucket": "youth-guide-9f516.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:649354724593:android:a7e8e0aaced3ceec475550",
+        "android_client_info": {
+          "package_name": "com.methodist.youthmind"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA1RbSRUx6Ha8WfnzIcrp8Mv_Hkc1lq9qU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
