@@ -28,7 +28,7 @@ class _SplashScreenState extends State<SplashScreen> {
         width: double.infinity,
         height: double.infinity,
         decoration: BoxDecoration(color: Colors.white),
-        child: Image.asset('assets/splash.png', fit: BoxFit.contain),
+        child: Image.asset('assets/splash_2.png', fit: BoxFit.fill),
       ),
     );
   }

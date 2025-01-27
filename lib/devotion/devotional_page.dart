@@ -295,18 +295,18 @@ class _DevotionalPageState extends State<DevotionalPage> {
                   ),
                   DevotionalSection(
                     title: 'MESSAGE',
-                    content: widget.dailyDevotional['message'],
+                    content: widget.dailyDevotional['message'] ?? '',
                     fontSize: fontSize,
                   ),
                   DevotionalSection(
                     title: 'WISDOM SHOT',
-                    content: widget.dailyDevotional['wisdom shot'],
+                    content: widget.dailyDevotional['wisdom shot'] ?? '',
                     fontSize: fontSize,
                     isQuote: true,
                   ),
                   DevotionalSection(
                     title: 'PRAYER',
-                    content: widget.dailyDevotional['prayer'],
+                    content: widget.dailyDevotional['prayer'] ?? '',
                     fontSize: fontSize,
                     isPrayer: true,
                   ),
