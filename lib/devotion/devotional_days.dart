@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:youth_guide/app_drawer.dart';
 import 'package:youth_guide/service/api_service.dart';
 import 'package:youth_guide/utils.dart';
 import 'devotional_page.dart';
@@ -44,6 +45,7 @@ class _DevotionalCalendarPageState extends State<DevotionalCalendarPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: const AppDrawer(),
       appBar: AppBar(
         title: Text(
           'Select a Date',
