@@ -30,6 +30,12 @@ class AppTheme {
       ),
     ),
     indicatorColor: AppColors.appBlackColor.withAlpha(200),
+    sliderTheme: SliderThemeData(
+      thumbColor: AppColors.appBlackColor,
+      activeTrackColor: AppColors.appBlackColor.withAlpha(235),
+      inactiveTrackColor: AppColors.appBlackColor.withAlpha(100),
+      valueIndicatorColor: AppColors.appBlackColor.withAlpha(235),
+    ),
   );
 
   static ThemeData darkTheme = ThemeData(
@@ -49,5 +55,11 @@ class AppTheme {
       ),
     ),
     indicatorColor: AppColors.appGoldColor,
+    sliderTheme: SliderThemeData(
+      thumbColor: AppColors.appGoldColor,
+      activeTrackColor: AppColors.appGoldColor.withAlpha(235),
+      inactiveTrackColor: AppColors.appGoldColor.withAlpha(100),
+      valueIndicatorColor: AppColors.appGoldColor.withAlpha(235),
+    ),
   );
 }

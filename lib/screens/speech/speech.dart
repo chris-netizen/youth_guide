@@ -2,7 +2,9 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:youth_guide/service/api_service.dart';
+import 'package:youth_guide/service/providers/font_provider.dart';
 import 'package:youth_guide/utils.dart';
 
 class AppForeward extends StatefulWidget {
@@ -32,6 +34,8 @@ class _AppForewardState extends State<AppForeward> {
 
   @override
   Widget build(BuildContext context) {
+    final fontSize = Provider.of<FontSizeProvider>(context).fontSize;
+
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -42,10 +46,13 @@ class _AppForewardState extends State<AppForeward> {
             Text(
               'Methodist Church Nigeria \nDirectorate of Evangelism and Discipleship'
                   .toUpperCase(),
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: GoogleFonts.lora(
+                fontSize: fontSize + 2,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             SizedBox(height: 4),
-            Text('Foreward', style: TextStyle(fontSize: 18)),
+            Text('Foreward', style: GoogleFonts.lora(fontSize: fontSize + 2)),
           ],
         ),
       ),
@@ -68,27 +75,27 @@ class _AppForewardState extends State<AppForeward> {
                   children: [
                     Text(
                       TextToSpeech.textToSpeech,
-                      style: TextStyle(fontSize: 16),
+                      style: GoogleFonts.merriweatherSans(fontSize: fontSize),
                     ),
                     SizedBox(height: 16),
                     Text(
                       foreward?[0]['name'] ?? '',
                       style: GoogleFonts.acme(
-                        fontSize: 18,
+                        fontSize: fontSize + 2,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                     Text(
                       foreward?[0]['address'] ?? '',
                       style: GoogleFonts.acme(
-                        fontSize: 18,
+                        fontSize: fontSize,
                         fontWeight: FontWeight.w400,
                       ),
                     ),
                     Text(
                       foreward?[0]['position'] ?? '',
                       style: GoogleFonts.acme(
-                        fontSize: 18,
+                        fontSize: fontSize,
                         fontWeight: FontWeight.w400,
                       ),
                     ),

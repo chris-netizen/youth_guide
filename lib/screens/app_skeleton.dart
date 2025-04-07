@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:youth_guide/screens/bible/bible_screen.dart';
 import 'package:youth_guide/screens/devotion/devotional_days.dart';
 import 'package:youth_guide/screens/journal/journal_screen.dart';
 import 'package:youth_guide/screens/settings/settings.dart';
@@ -13,6 +14,7 @@ class AppSkeleton extends StatefulWidget {
 class _AppSkeletonState extends State<AppSkeleton> {
   final List<Widget> _pages = [
     DevotionalCalendarPage(),
+    BibleScreen(),
     JournalListScreen(),
     SettingsPage(),
   ];
@@ -26,6 +28,10 @@ class _AppSkeletonState extends State<AppSkeleton> {
       bottomNavigationBar: BottomNavigationBar(
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Home'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.book_outlined),
+            label: 'Bible',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.book), label: 'Journal'),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),

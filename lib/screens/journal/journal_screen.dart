@@ -134,8 +134,6 @@ class JournalListScreen extends StatelessWidget {
                     ),
                   );
                   Navigator.pop(context);
-                  // Refresh the list
-                  // You might want to use a state management solution here
                 },
                 child: Text('Save'),
               ),
@@ -167,8 +165,6 @@ class JournalListScreen extends StatelessWidget {
 
     if (confirm) {
       await DatabaseHelper().deleteEntry(id);
-      // Refresh the list
-      // You might want to use a state management solution here
     }
   }
 }

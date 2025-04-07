@@ -34,7 +34,7 @@ class DatepickerTheme {
       color: AppColors.appGoldColor,
       shape: BoxShape.circle,
     ),
-    weekendTextStyle: TextStyle(color: AppColors.appDarkRedColor),
-    defaultTextStyle: TextStyle(color: AppColors.appGoldColor),
+    weekendTextStyle: TextStyle(color: AppColors.appGreyColor),
+    defaultTextStyle: TextStyle(color: AppColors.appGreyColor),
   );
 }

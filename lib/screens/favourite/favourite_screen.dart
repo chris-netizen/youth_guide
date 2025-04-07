@@ -69,7 +69,8 @@ class FavoritesScreen extends StatelessWidget {
                       MaterialPageRoute(
                         builder:
                             (context) => DevotionalPage(
-                              dailyDevotional: devotionalContent,
+                              initialIndex: index,
+                              dailyDevotionals: [devotionalContent],
                             ),
                       ),
                     );
