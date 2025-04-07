@@ -193,7 +193,7 @@ class _DevotionalCalendarPageState extends State<DevotionalCalendarPage> {
                               MaterialPageRoute(
                                 builder:
                                     (context) => DevotionalPage(
-                                      initialIndex: dayOfToday - 1,
+                                      initialIndex: dayOfYear - 1,
                                       dailyDevotionals: devotional!,
                                     ),
                               ),

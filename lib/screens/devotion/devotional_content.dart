@@ -57,6 +57,10 @@ class DevotionalContent extends StatelessWidget {
                   : AppColors.appWhiteColor,
 
           flexibleSpace: FlexibleSpaceBar(
+            titlePadding: EdgeInsets.only(
+              left: _isCollapsed ? 50 : 72,
+              bottom: 16,
+            ),
             title: Text(
               'Daily Devotional',
               style: GoogleFonts.lora(
@@ -135,127 +139,120 @@ class DevotionalContent extends StatelessWidget {
             },
           ),
           actions: [
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  visualDensity: VisualDensity.compact,
-                  icon:
-                      !themeProvider.isDarkMode
-                          ? Icon(
-                            Icons.share,
-                            color:
-                                _isCollapsed
-                                    ? AppColors.appBlackColor
-                                    : AppColors.appWhiteColor,
-                          )
-                          : Icon(
-                            Icons.share,
-                            color:
-                                _isCollapsed
-                                    ? AppColors.appWhiteColor
-                                    : AppColors.appBlackColor,
-                          ),
-                  onPressed: () {
-                    Share.share(
-                      shareDevotion(
-                        date: formattedDate ?? "",
-                        topic: dailyDevotional['topic'],
-                        text: dailyDevotional['text'],
-                        memoryVerse: dailyDevotional['memory verse'],
-                        message: dailyDevotional['message'],
-                        wisdomShot: dailyDevotional['wisdom shot'],
-                        prayer: dailyDevotional['prayer'],
-                      ),
-                    );
-                  },
-                ),
-                IconButton(
-                  visualDensity: VisualDensity.compact,
-                  icon:
-                      !themeProvider.isDarkMode
-                          ? Icon(
-                            Icons.book,
-                            color:
-                                _isCollapsed
-                                    ? AppColors.appBlackColor
-                                    : AppColors.appWhiteColor,
-                          )
-                          : Icon(
-                            Icons.book,
-                            color:
-                                _isCollapsed
-                                    ? AppColors.appWhiteColor
-                                    : AppColors.appBlackColor,
-                          ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => JournalListScreen(),
-                      ),
-                    );
-                  },
-                ),
-                IconButton(
-                  visualDensity: VisualDensity.compact,
-                  icon:
-                      !themeProvider.isDarkMode
-                          ? Icon(
-                            ttsProvider.state == TtsState.playing
-                                ? Icons.pause_circle_filled
-                                : Icons.play_circle_filled,
-                            color:
-                                _isCollapsed
-                                    ? AppColors.appBlackColor
-                                    : AppColors.appWhiteColor,
-                          )
-                          : Icon(
-                            ttsProvider.state == TtsState.playing
-                                ? Icons.pause_circle_filled
-                                : Icons.play_circle_filled,
-                            color:
-                                _isCollapsed
-                                    ? AppColors.appWhiteColor
-                                    : AppColors.appBlackColor,
-                          ),
-                  onPressed: () {
-                    ttsProvider.setTexts(devotionText);
-                    togglePlayPause(ttsProvider);
-                  },
-                ),
-                PopupMenuButton(
-                  icon: Icon(
-                    Icons.more_vert,
-                    color:
-                        !themeProvider.isDarkMode
-                            ? _isCollapsed
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              icon:
+                  !themeProvider.isDarkMode
+                      ? Icon(
+                        Icons.share,
+                        color:
+                            _isCollapsed
                                 ? AppColors.appBlackColor
-                                : AppColors.appWhiteColor
-                            : _isCollapsed
-                            ? AppColors.appWhiteColor
-                            : AppColors.appBlackColor,
+                                : AppColors.appWhiteColor,
+                      )
+                      : Icon(
+                        Icons.share,
+                        color:
+                            _isCollapsed
+                                ? AppColors.appWhiteColor
+                                : AppColors.appBlackColor,
+                      ),
+              onPressed: () {
+                Share.share(
+                  shareDevotion(
+                    date: formattedDate ?? "",
+                    topic: dailyDevotional['topic'],
+                    text: dailyDevotional['text'],
+                    memoryVerse: dailyDevotional['memory verse'],
+                    message: dailyDevotional['message'],
+                    wisdomShot: dailyDevotional['wisdom shot'],
+                    prayer: dailyDevotional['prayer'],
                   ),
+                );
+              },
+            ),
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              icon:
+                  !themeProvider.isDarkMode
+                      ? Icon(
+                        Icons.book,
+                        color:
+                            _isCollapsed
+                                ? AppColors.appBlackColor
+                                : AppColors.appWhiteColor,
+                      )
+                      : Icon(
+                        Icons.book,
+                        color:
+                            _isCollapsed
+                                ? AppColors.appWhiteColor
+                                : AppColors.appBlackColor,
+                      ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => JournalListScreen()),
+                );
+              },
+            ),
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              icon:
+                  !themeProvider.isDarkMode
+                      ? Icon(
+                        ttsProvider.state == TtsState.playing
+                            ? Icons.pause_circle_filled
+                            : Icons.play_circle_filled,
+                        color:
+                            _isCollapsed
+                                ? AppColors.appBlackColor
+                                : AppColors.appWhiteColor,
+                      )
+                      : Icon(
+                        ttsProvider.state == TtsState.playing
+                            ? Icons.pause_circle_filled
+                            : Icons.play_circle_filled,
+                        color:
+                            _isCollapsed
+                                ? AppColors.appWhiteColor
+                                : AppColors.appBlackColor,
+                      ),
+              onPressed: () {
+                ttsProvider.setTexts(devotionText);
+                togglePlayPause(ttsProvider);
+              },
+            ),
+            PopupMenuButton(
+              icon: Icon(
+                Icons.more_vert,
+                color:
+                    !themeProvider.isDarkMode
+                        ? _isCollapsed
+                            ? AppColors.appBlackColor
+                            : AppColors.appWhiteColor
+                        : _isCollapsed
+                        ? AppColors.appWhiteColor
+                        : AppColors.appBlackColor,
+              ),
 
-                  itemBuilder:
-                      (context) => [
-                        PopupMenuItem(
-                          child: Text('Decrease font'),
-                          onTap: () {
-                            if (fontSize <= 12) return;
-                            fontSizeProvider.setFontSize(fontSize - 2);
-                          },
-                        ),
-                        PopupMenuItem(
-                          child: Text('Increase font'),
-                          onTap: () {
-                            if (fontSize >= 20) return;
-                            fontSizeProvider.setFontSize(fontSize + 2);
-                          },
-                        ),
-                      ],
-                ),
-              ],
+              itemBuilder:
+                  (context) => [
+                    PopupMenuItem(
+                      child: Text('Decrease font'),
+                      onTap: () {
+                        if (fontSize <= 12) return;
+                        fontSizeProvider.setFontSize(fontSize - 2);
+                      },
+                    ),
+                    PopupMenuItem(
+                      child: Text('Increase font'),
+                      onTap: () {
+                        if (fontSize >= 20) return;
+                        fontSizeProvider.setFontSize(fontSize + 2);
+                      },
+                    ),
+                  ],
             ),
           ],
         ),
@@ -275,46 +272,8 @@ class DevotionalContent extends StatelessWidget {
                   title: 'TEXT',
                   content: dailyDevotional['text'],
                   fontSize: fontSize,
-                  onTextTap: () async {
-                    if (dailyDevotional['text'] != null &&
-                        dailyDevotional['text']!.isNotEmpty) {
-                      final verseData = await BibleService()
-                          .getVerseFromReference(dailyDevotional['text']!);
-
-                      if (verseData.isNotEmpty) {
-                        final verse = verseData.first;
-                        showModalBottomSheet(
-                          context: context,
-                          backgroundColor:
-                              themeProvider.isDarkMode
-                                  ? AppColors.appGoldColor
-                                  : AppColors.appGreyColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.vertical(
-                              top: Radius.circular(16),
-                            ),
-                          ),
-                          builder:
-                              (_) => Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Text(
-                                  '${verse['book']} ${verse['chapter']}:${verse['verse']} - ${verse['text']}',
-                                  style: GoogleFonts.merriweatherSans(
-                                    fontSize: fontSize,
-                                    color:
-                                        themeProvider.isDarkMode
-                                            ? AppColors.appBlackColor.withAlpha(
-                                              200,
-                                            )
-                                            : AppColors.appBlackColor.withAlpha(
-                                              200,
-                                            ),
-                                  ),
-                                ),
-                              ),
-                        );
-                      }
-                    }
+                  onTap: () {
+                    // Open Bible reader with this reference
                   },
                   isDarkMode: themeProvider.isDarkMode,
                 ),

@@ -50,12 +50,6 @@ class _DevotionalPageState extends State<DevotionalPage> {
     super.initState();
     _currentIndex = widget.initialIndex;
     _pageController = PageController(initialPage: _currentIndex);
-    final parsed = BibleVerseParser.parseVerse(
-      widget.dailyDevotionals[_currentIndex]['memory verse'],
-    );
-
-    content = parsed['content'];
-    reference = parsed['reference'];
 
     _scrollController.addListener(() {
       if (_scrollController.offset > 40 && !_isCollapsed) {
@@ -264,6 +258,12 @@ class _DevotionalPageState extends State<DevotionalPage> {
         itemCount: widget.dailyDevotionals.length,
         itemBuilder: (context, index) {
           final devotional = widget.dailyDevotionals[index];
+          final parsed = BibleVerseParser.parseVerse(
+            widget.dailyDevotionals[_currentIndex]['memory verse'],
+          );
+
+          content = parsed['content'];
+          reference = parsed['reference'];
           return DevotionalContent(
             scrollController: _scrollController,
             themeProvider: themeProvider,

@@ -12,7 +12,6 @@ class DevotionalSection extends StatelessWidget {
   final bool isQuote;
   final bool isPrayer;
   final VoidCallback? onTap;
-  final VoidCallback? onTextTap;
 
   final bool isDarkMode;
 
@@ -26,11 +25,11 @@ class DevotionalSection extends StatelessWidget {
     this.isPrayer = false,
     this.onTap,
     required this.isDarkMode,
-    this.onTextTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    print('reference: $reference');
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
       child: Column(
@@ -65,19 +64,16 @@ class DevotionalSection extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                GestureDetector(
-                  onTap: onTextTap,
-                  child: Text(
-                    content,
-                    style: GoogleFonts.merriweatherSans(
-                      fontSize: fontSize,
-                      height: 1.6,
-                      color:
-                          isDarkMode
-                              ? AppColors.appGreyColor
-                              : AppColors.appBlackColor.withOpacity(0.7),
-                      fontStyle: isQuote ? FontStyle.italic : FontStyle.normal,
-                    ),
+                Text(
+                  content,
+                  style: GoogleFonts.merriweatherSans(
+                    fontSize: fontSize,
+                    height: 1.6,
+                    color:
+                        isDarkMode
+                            ? AppColors.appGreyColor
+                            : AppColors.appBlackColor.withOpacity(0.7),
+                    fontStyle: isQuote ? FontStyle.italic : FontStyle.normal,
                   ),
                 ),
                 if (reference != null && reference!.isNotEmpty) ...[
