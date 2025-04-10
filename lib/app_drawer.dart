@@ -1,9 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:youth_guide/devotion/devotional_days.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:youth_guide/screens/devotion/devotional_days.dart';
+import 'package:youth_guide/screens/speech/speech.dart';
 
-class AppDrawer extends StatelessWidget {
+class AppDrawer extends StatefulWidget {
   const AppDrawer({super.key});
+
+  @override
+  State<AppDrawer> createState() => _AppDrawerState();
+}
+
+class _AppDrawerState extends State<AppDrawer> {
+  Future<String> getAppVersion() async {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    return packageInfo.version;
+  }
+
+  String? version;
+
+  @override
+  void initState() {
+    getVersion();
+    super.initState();
+  }
+
+  void getVersion() async {
+    version = await getAppVersion();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,8 +40,8 @@ class AppDrawer extends StatelessWidget {
             end: Alignment.bottomCenter,
           ),
         ),
-        child: ListView(
-          padding: EdgeInsets.zero,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             DrawerHeader(
               decoration: BoxDecoration(
@@ -30,14 +54,14 @@ class AppDrawer extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const CircleAvatar(
+                  CircleAvatar(
                     radius: 40,
                     backgroundColor: Colors.white,
-                    child: Icon(Icons.menu_book, size: 40, color: Colors.blue),
+                    child: Image.asset('assets/app_logo.png'),
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    'Young Mind',
+                    'Young Mind Devotional',
                     style: GoogleFonts.playfairDisplay(
                       textStyle: const TextStyle(
                         color: Colors.white,
@@ -106,7 +130,7 @@ class AppDrawer extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.event, color: Colors.blue),
               title: Text(
-                'Events',
+                'Foreward',
                 style: GoogleFonts.roboto(
                   textStyle: const TextStyle(
                     fontSize: 16,
@@ -115,11 +139,46 @@ class AppDrawer extends StatelessWidget {
                 ),
               ),
               onTap: () {
-                // Navigate to Events page
-                Navigator.pop(context);
-                // Add navigation to Events page when created
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AppForeward()),
+                );
               },
             ),
+            Spacer(),
+            FutureBuilder<String>(
+              future: getAppVersion(),
+              builder: (context, snapshot) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Version: ',
+                        style: GoogleFonts.inter(
+                          textStyle: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        snapshot.data ?? 'Loading...',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(
+                          textStyle: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 10),
           ],
         ),
       ),
