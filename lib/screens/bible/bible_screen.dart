@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -20,6 +21,8 @@ class _BibleScreenState extends State<BibleScreen> {
   List<String> _allBooks = [];
   List<String> _filteredBooks = [];
   bool _isLoading = true;
+  Timer? _debounce;
+  static final Map<String, List<String>> _bookCache = {};
 
   @override
   void initState() {
@@ -33,35 +36,49 @@ class _BibleScreenState extends State<BibleScreen> {
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
 
   Future<void> fetchBooks(String version) async {
+    if (_bookCache.containsKey(version)) {
+      setState(() {
+        _allBooks = _bookCache[version]!;
+        _filteredBooks = List.from(_allBooks);
+        _isLoading = false;
+      });
+      return;
+    }
+
     final db = await BibleDatabase.database;
     final results = await db.rawQuery(
-      'SELECT DISTINCT book FROM verses WHERE version = ? ORDER BY book ASC',
+      'SELECT book FROM books WHERE version = ? ORDER BY book ASC',
       [version],
     );
     setState(() {
       _allBooks = results.map((e) => e['book'] as String).toList();
+      _bookCache[version] = _allBooks;
       _filteredBooks = List.from(_allBooks);
       _isLoading = false;
     });
   }
 
   void _filterBooks(String query) {
-    setState(() {
-      if (query.isEmpty) {
-        _filteredBooks = List.from(_allBooks);
-      } else {
-        _filteredBooks =
-            _allBooks
-                .where(
-                  (book) => book.toLowerCase().contains(query.toLowerCase()),
-                )
-                .toList();
-      }
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      setState(() {
+        if (query.isEmpty) {
+          _filteredBooks = List.from(_allBooks);
+        } else {
+          _filteredBooks =
+              _allBooks
+                  .where(
+                    (book) => book.toLowerCase().contains(query.toLowerCase()),
+                  )
+                  .toList();
+        }
+      });
     });
   }
 

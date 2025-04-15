@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -17,18 +15,39 @@ class JournalListScreen extends StatefulWidget {
 }
 
 class _JournalListScreenState extends State<JournalListScreen> {
+  late Future<List<JournalEntry>> _entriesFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _entriesFuture = DatabaseHelper().getEntries();
+  }
+
+  void _refreshEntries() {
+    setState(() {
+      _entriesFuture = DatabaseHelper().getEntries();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final fontSize = Provider.of<FontSizeProvider>(context).fontSize;
 
     return Scaffold(
-      appBar: AppBar(title: Text('My Journal Entries')),
+      appBar: AppBar(title: const Text('My Journal Entries')),
       body: FutureBuilder<List<JournalEntry>>(
-        future: DatabaseHelper().getEntries(),
+        future: _entriesFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return Center(
+              child: CircularProgressIndicator(
+                color:
+                    themeProvider.isDarkMode
+                        ? AppColors.appGreyColor
+                        : AppColors.appBlackColor.withAlpha(200),
+              ),
+            );
           }
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return Center(
@@ -38,47 +57,51 @@ class _JournalListScreenState extends State<JournalListScreen> {
               ),
             );
           }
+          final entries = snapshot.data!;
           return ListView.builder(
-            itemCount: snapshot.data!.length,
+            itemCount: entries.length,
             itemBuilder: (context, index) {
-              final entry = snapshot.data![index];
+              final entry = entries[index];
               return Card(
-                margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: ListTile(
                   title: Text(
                     entry.devotionalTopic,
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   subtitle: Text(
                     entry.date,
-                    style: TextStyle(color: Colors.grey),
+                    style: const TextStyle(color: Colors.grey),
                   ),
                   onTap: () => _showEntryDetails(context, entry),
                   trailing: PopupMenuButton(
                     itemBuilder:
                         (context) => [
                           PopupMenuItem(
-                            child: ListTile(
+                            value: 'edit',
+                            child: const ListTile(
                               leading: Icon(Icons.edit),
                               title: Text('Edit'),
                             ),
-                            onTap: () {
-                              _editEntry(context, entry);
-                            },
                           ),
                           PopupMenuItem(
+                            value: 'delete',
                             child: ListTile(
                               leading: Icon(
                                 Icons.delete,
                                 color: AppColors.appDarkRedColor,
                               ),
-                              title: Text('Delete'),
+                              title: const Text('Delete'),
                             ),
-                            onTap: () {
-                              _deleteEntry(context, entry.id!, themeProvider);
-                            },
                           ),
                         ],
+                    onSelected: (value) {
+                      if (value == 'edit') {
+                        _editEntry(context, entry);
+                      } else if (value == 'delete') {
+                        _deleteEntry(context, entry.id!, themeProvider);
+                      }
+                    },
                   ),
                 ),
               );
@@ -102,11 +125,11 @@ class _JournalListScreenState extends State<JournalListScreen> {
                 children: [
                   Text(
                     'Date: ${entry.date}',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(height: 16),
-                  Text('Reflection:'),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 16),
+                  const Text('Reflection:'),
+                  const SizedBox(height: 8),
                   Text(entry.reflection),
                 ],
               ),
@@ -114,7 +137,7 @@ class _JournalListScreenState extends State<JournalListScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text('Close'),
+                child: const Text('Close'),
               ),
             ],
           ),
@@ -130,16 +153,16 @@ class _JournalListScreenState extends State<JournalListScreen> {
       context: context,
       builder:
           (context) => AlertDialog(
-            title: Text('Edit Reflection'),
+            title: const Text('Edit Reflection'),
             content: TextField(
               controller: controller,
               maxLines: 5,
-              decoration: InputDecoration(border: OutlineInputBorder()),
+              decoration: const InputDecoration(border: OutlineInputBorder()),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text('Cancel'),
+                child: const Text('Cancel'),
               ),
               ElevatedButton(
                 onPressed: () async {
@@ -153,8 +176,9 @@ class _JournalListScreenState extends State<JournalListScreen> {
                     ),
                   );
                   Navigator.pop(context);
+                  _refreshEntries();
                 },
-                child: Text('Save'),
+                child: const Text('Save'),
               ),
             ],
           ),
@@ -166,12 +190,12 @@ class _JournalListScreenState extends State<JournalListScreen> {
     int id,
     ThemeProvider themeProvider,
   ) async {
-    bool confirm = await showDialog(
+    final bool? confirm = await showDialog<bool>(
       context: context,
       builder:
           (context) => AlertDialog(
-            title: Text('Delete Entry'),
-            content: Text('Are you sure you want to delete this entry?'),
+            title: const Text('Delete Entry'),
+            content: const Text('Are you sure you want to delete this entry?'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
@@ -186,24 +210,22 @@ class _JournalListScreenState extends State<JournalListScreen> {
                 ),
               ),
               ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context, true);
-                  setState(() {});
-                },
+                onPressed: () => Navigator.pop(context, true),
                 style: ElevatedButton.styleFrom(
                   backgroundColor:
                       themeProvider.isDarkMode
                           ? AppColors.appWhiteColor
                           : AppColors.appDarkRedColor,
                 ),
-                child: Text('Delete'),
+                child: const Text('Delete'),
               ),
             ],
           ),
     );
 
-    if (confirm) {
+    if (confirm == true) {
       await DatabaseHelper().deleteEntry(id);
+      _refreshEntries();
     }
   }
 }

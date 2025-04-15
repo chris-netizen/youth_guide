@@ -19,6 +19,7 @@ class ChapterScreen extends StatefulWidget {
 
 class _ChapterScreenState extends State<ChapterScreen> {
   late final ScrollController _scrollController;
+  static final Map<String, List<int>> _chapterCache = {};
 
   @override
   void initState() {
@@ -33,12 +34,21 @@ class _ChapterScreenState extends State<ChapterScreen> {
   }
 
   Future<List<int>> fetchChapters() async {
+    final cacheKey = '${widget.version}-${widget.book}';
+    if (_chapterCache.containsKey(cacheKey)) {
+      return _chapterCache[cacheKey]!;
+    }
+
     final db = await BibleDatabase.database;
-    final results = await db.rawQuery(
-      'SELECT DISTINCT chapter FROM verses WHERE version = ? AND book = ? ORDER BY chapter ASC',
-      [widget.version, widget.book],
-    );
-    return results.map((e) => e['chapter'] as int).toList();
+    return await db.transaction((txn) async {
+      final results = await txn.rawQuery(
+        'SELECT DISTINCT chapter FROM verses WHERE version = ? AND book = ? ORDER BY chapter ASC',
+        [widget.version, widget.book],
+      );
+      final chapters = results.map((e) => e['chapter'] as int).toList();
+      _chapterCache[cacheKey] = chapters;
+      return chapters;
+    });
   }
 
   @override
