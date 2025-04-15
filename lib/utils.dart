@@ -27,6 +27,7 @@ String shareDevotion({
   required String message,
   required String wisdomShot,
   required String prayer,
+  required String link,
 }) {
   return '''
 *METHODIST CHURCH NIGERIA*
@@ -44,6 +45,8 @@ String shareDevotion({
 *WISDOM SHOT:* $wisdomShot
 
 *PRAYER:* $prayer
+
+*Get the Methodist young mind devotional at:* $link
 ''';
 }
 
@@ -56,9 +59,9 @@ class BibleVerseParser {
     String reference = '';
     String content = '';
 
-    // Regular expression to match bible references
+    // Regular expression to match Bible references
     final referenceRegex = RegExp(
-      r'^(?:\d*\s*[A-Za-z]+\s*\d+:\d+(?:[-,;]\d+)*)',
+      r'^(?:\d*\s*[A-Za-z]+(?:\s*[A-Za-z]+|\.)*)\s*\d+\s*:\s*\d+(?:[-,;]\d+)*',
       caseSensitive: true,
     );
 
@@ -93,7 +96,7 @@ class BibleVerseParser {
         ) // Replace multiple spaces with single space
         .replaceAll(
           RegExp(r'\s*([;:])\s*'),
-          r'\1 ',
+          r'$1 ',
         ); // Ensure proper spacing around separators
   }
 }

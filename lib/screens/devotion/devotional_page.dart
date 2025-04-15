@@ -178,7 +178,7 @@ class _DevotionalPageState extends State<DevotionalPage> {
                         widget.dailyDevotionals[_currentIndex]['topic'] ?? '',
                     reflection: _journalController.text,
                     devotionalContent: json.encode(
-                      widget.dailyDevotionals[_currentIndex],
+                      widget.dailyDevotionals[_currentIndex]['message'],
                     ),
                   );
 
@@ -189,8 +189,22 @@ class _DevotionalPageState extends State<DevotionalPage> {
 
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Reflection saved successfully!'),
-                      backgroundColor: Colors.green,
+                      content: Text(
+                        'Reflection saved successfully!',
+                        style: TextStyle(
+                          color:
+                              themeProvider.isDarkMode
+                                  ? AppColors.appBlackColor
+                                  : AppColors.appGreyColor,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      backgroundColor:
+                          themeProvider.isDarkMode
+                              ? AppColors.appGoldColor
+                              : AppColors.appBlackColor,
+                      duration: const Duration(seconds: 2),
                     ),
                   );
                 }

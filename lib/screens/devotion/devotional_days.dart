@@ -1,12 +1,17 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 import 'package:youth_guide/service/api_service.dart';
 import 'package:youth_guide/service/database/ad_helper.dart';
+import 'package:youth_guide/service/database/versions.dart';
+import 'package:youth_guide/service/providers/notification_provider.dart';
 import 'package:youth_guide/service/providers/theme_provider.dart';
 import 'package:youth_guide/utils.dart';
 import 'package:youth_guide/utils/app_colors.dart';
@@ -31,6 +36,8 @@ class _DevotionalCalendarPageState extends State<DevotionalCalendarPage> {
   @override
   void initState() {
     super.initState();
+    _logCurrentTimes();
+    _loadAppBible();
     _bannerAd = BannerAd(
       adUnitId: AdHelper.getAdUnitId,
       request: const AdRequest(),
@@ -44,6 +51,29 @@ class _DevotionalCalendarPageState extends State<DevotionalCalendarPage> {
       ),
     )..load();
     _fetchDevotionalData();
+  }
+
+  void _logCurrentTimes() async {
+    final rawNow = DateTime.now();
+    tz.initializeTimeZones();
+    final String currentTimeZone = await FlutterTimezone.getLocalTimezone();
+    tz.setLocalLocation(tz.getLocation(currentTimeZone));
+    final tzNow = tz.TZDateTime.now(tz.local);
+    var scheduled = tz.TZDateTime(
+      tz.local,
+      rawNow.year,
+      rawNow.month,
+      rawNow.day,
+      rawNow.hour,
+      6,
+    );
+    debugPrint('→ DateTime.now():     $rawNow');
+    debugPrint('→ tz.TZDateTime.now:  $tzNow');
+    debugPrint('→ scheduled:         $scheduled');
+  }
+
+  Future<void> _loadAppBible() async {
+    await Versions.instance.loadBibleVersions();
   }
 
   @override
@@ -65,9 +95,12 @@ class _DevotionalCalendarPageState extends State<DevotionalCalendarPage> {
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
 
+    final notificationProvider = Provider.of<NotificationProvider>(context);
+
+    log('${notificationProvider.isNotificationEnabled}');
+
     final currentYear = DateTime.now().year;
     return Scaffold(
-      // drawer: AppDrawer(),
       appBar: AppBar(
         title: Text('Select a Date'),
         flexibleSpace: Container(

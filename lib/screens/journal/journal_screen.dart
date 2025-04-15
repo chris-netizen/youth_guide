@@ -1,14 +1,27 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:youth_guide/service/database/sqldb.dart';
 import 'package:youth_guide/model/journal.dart';
+import 'package:youth_guide/service/providers/font_provider.dart';
+import 'package:youth_guide/service/providers/theme_provider.dart';
+import 'package:youth_guide/utils/app_colors.dart';
 
-class JournalListScreen extends StatelessWidget {
+class JournalListScreen extends StatefulWidget {
   const JournalListScreen({super.key});
 
   @override
+  State<JournalListScreen> createState() => _JournalListScreenState();
+}
+
+class _JournalListScreenState extends State<JournalListScreen> {
+  @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final fontSize = Provider.of<FontSizeProvider>(context).fontSize;
+
     return Scaffold(
       appBar: AppBar(title: Text('My Journal Entries')),
       body: FutureBuilder<List<JournalEntry>>(
@@ -18,7 +31,12 @@ class JournalListScreen extends StatelessWidget {
             return Center(child: CircularProgressIndicator());
           }
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text('No journal entries yet'));
+            return Center(
+              child: Text(
+                'No journal entries yet',
+                style: GoogleFonts.lora(fontSize: fontSize),
+              ),
+            );
           }
           return ListView.builder(
             itemCount: snapshot.data!.length,
@@ -45,18 +63,19 @@ class JournalListScreen extends StatelessWidget {
                               title: Text('Edit'),
                             ),
                             onTap: () {
-                              Navigator.pop(context);
                               _editEntry(context, entry);
                             },
                           ),
                           PopupMenuItem(
                             child: ListTile(
-                              leading: Icon(Icons.delete, color: Colors.red),
+                              leading: Icon(
+                                Icons.delete,
+                                color: AppColors.appDarkRedColor,
+                              ),
                               title: Text('Delete'),
                             ),
                             onTap: () {
-                              Navigator.pop(context);
-                              _deleteEntry(context, entry.id!);
+                              _deleteEntry(context, entry.id!, themeProvider);
                             },
                           ),
                         ],
@@ -142,7 +161,11 @@ class JournalListScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _deleteEntry(BuildContext context, int id) async {
+  Future<void> _deleteEntry(
+    BuildContext context,
+    int id,
+    ThemeProvider themeProvider,
+  ) async {
     bool confirm = await showDialog(
       context: context,
       builder:
@@ -152,11 +175,27 @@ class JournalListScreen extends StatelessWidget {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: Text('Cancel'),
+                child: Text(
+                  'Cancel',
+                  style: TextStyle(
+                    color:
+                        themeProvider.isDarkMode
+                            ? AppColors.appWhiteColor
+                            : AppColors.appBlackColor,
+                  ),
+                ),
               ),
               ElevatedButton(
-                onPressed: () => Navigator.pop(context, true),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                onPressed: () {
+                  Navigator.pop(context, true);
+                  setState(() {});
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor:
+                      themeProvider.isDarkMode
+                          ? AppColors.appWhiteColor
+                          : AppColors.appDarkRedColor,
+                ),
                 child: Text('Delete'),
               ),
             ],

@@ -1,11 +1,15 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:youth_guide/screens/devotion/devotional_section.dart';
 import 'package:youth_guide/screens/journal/journal_screen.dart';
 import 'package:youth_guide/service/api_service.dart';
+import 'package:youth_guide/service/providers/bible_provider.dart';
 import 'package:youth_guide/service/providers/font_provider.dart';
 import 'package:youth_guide/service/providers/theme_provider.dart';
 import 'package:youth_guide/service/providers/tts_provider.dart';
@@ -44,6 +48,8 @@ class DevotionalContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final version =
+        Provider.of<LocalBibleProvider>(context, listen: false).selectedVersion;
     return CustomScrollView(
       controller: _scrollController,
       slivers: [
@@ -167,6 +173,8 @@ class DevotionalContent extends StatelessWidget {
                     message: dailyDevotional['message'],
                     wisdomShot: dailyDevotional['wisdom shot'],
                     prayer: dailyDevotional['prayer'],
+                    link:
+                        'https://play.google.com/store/apps/details?id=com.methodist.youthmind',
                   ),
                 );
               },
@@ -270,10 +278,66 @@ class DevotionalContent extends StatelessWidget {
                 ),
                 DevotionalSection(
                   title: 'TEXT',
-                  content: dailyDevotional['text'],
+                  bibleVerse: dailyDevotional['text'],
                   fontSize: fontSize,
-                  onTap: () {
-                    // Open Bible reader with this reference
+                  onVerseTapped: () async {
+                    if (dailyDevotional['text'] != null) {
+                      final verseData = await BibleService()
+                          .getVerseFromReference(
+                            dailyDevotional['text'],
+                            version,
+                          );
+
+                      if (verseData.isNotEmpty) {
+                        showModalBottomSheet(
+                          context: context,
+                          backgroundColor:
+                              themeProvider.isDarkMode
+                                  ? AppColors.appGoldColor
+                                  : AppColors.appGreyColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(16),
+                            ),
+                          ),
+                          builder:
+                              (_) => SingleChildScrollView(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children:
+                                        verseData.map((verse) {
+                                          log('$verseData');
+                                          return Padding(
+                                            padding: const EdgeInsets.only(
+                                              bottom: 8.0,
+                                            ),
+                                            child: Text(
+                                              '${verse['book']} ${verse['chapter']}:${verse['verse']} - ${verse['text']}',
+                                              style:
+                                                  GoogleFonts.merriweatherSans(
+                                                    fontSize: fontSize,
+                                                    color:
+                                                        themeProvider.isDarkMode
+                                                            ? AppColors
+                                                                .appBlackColor
+                                                                .withAlpha(200)
+                                                            : AppColors
+                                                                .appBlackColor
+                                                                .withAlpha(200),
+                                                  ),
+                                            ),
+                                          );
+                                        }).toList(),
+                                  ),
+                                ),
+                              ),
+                        );
+                      }
+                    }
                   },
                   isDarkMode: themeProvider.isDarkMode,
                 ),
@@ -286,7 +350,7 @@ class DevotionalContent extends StatelessWidget {
                   onTap: () async {
                     if (reference != null && reference!.isNotEmpty) {
                       final verseData = await BibleService()
-                          .getVerseFromReference(reference!);
+                          .getVerseFromReference(reference!, version);
 
                       if (verseData.isNotEmpty) {
                         final verse = verseData.first;

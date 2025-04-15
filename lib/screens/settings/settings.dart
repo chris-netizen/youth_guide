@@ -1,4 +1,3 @@
-// settings_page.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -7,6 +6,7 @@ import 'package:youth_guide/screens/speech/speech.dart';
 import 'package:youth_guide/service/database/versions.dart';
 import 'package:youth_guide/service/providers/bible_provider.dart';
 import 'package:youth_guide/service/providers/font_provider.dart';
+import 'package:youth_guide/service/providers/notification_provider.dart';
 import 'package:youth_guide/service/providers/theme_provider.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -32,6 +32,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   void getVersion() async {
     version = await getAppVersion();
+    setState(() {});
   }
 
   @override
@@ -46,7 +47,7 @@ class _SettingsPageState extends State<SettingsPage> {
         children: [
           const SizedBox(height: 20),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Text(
               'Appearance',
               style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.bold),
@@ -91,7 +92,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
           const Divider(),
 
-          // Placeholder for font size
+          // Font Size
           Consumer<FontSizeProvider>(
             builder: (context, fontSizeProvider, _) {
               return Column(
@@ -121,6 +122,7 @@ class _SettingsPageState extends State<SettingsPage> {
             },
           ),
 
+          // Bible Version
           Consumer<LocalBibleProvider>(
             builder: (context, bibleVersionProvider, _) {
               return ListTile(
@@ -156,21 +158,30 @@ class _SettingsPageState extends State<SettingsPage> {
             },
           ),
 
-          // Placeholder for daily notifications
-          SwitchListTile(
-            secondary: const Icon(Icons.notifications_active),
-            title: Text(
-              'Daily Devotional Reminder',
-              style: GoogleFonts.merriweather(fontSize: fontSize),
-            ),
-            value: true,
-            onChanged: (value) {
-              // TODO: Implement notification toggle logic
+          // Daily Notifications
+          Consumer<NotificationProvider>(
+            builder: (context, notificationProvider, _) {
+              debugPrint(
+                'Notification enabled: ${notificationProvider.isNotificationEnabled}',
+              );
+              debugPrint('Notification provider: $notificationProvider');
+              return SwitchListTile(
+                secondary: const Icon(Icons.notifications_active),
+                title: Text(
+                  'Daily Devotional Reminder',
+                  style: GoogleFonts.merriweather(fontSize: fontSize),
+                ),
+                value: notificationProvider.isNotificationEnabled,
+                onChanged: (value) async {
+                  await notificationProvider.setNotificationEnabled(value);
+                },
+              );
             },
           ),
 
           const Divider(),
 
+          // Directorate of Evangelism
           ListTile(
             leading: const Icon(Icons.insert_drive_file),
             title: Text(
@@ -196,7 +207,7 @@ class _SettingsPageState extends State<SettingsPage> {
               showAboutDialog(
                 context: context,
                 applicationName: 'Devotional App',
-                applicationVersion: version,
+                applicationVersion: version ?? 'Unknown',
                 children: const [
                   Text('Stay inspired with daily devotional content.'),
                 ],

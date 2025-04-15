@@ -16,7 +16,12 @@ dependencies {
     // Add Firebase Analytics
     implementation("com.google.firebase:firebase-analytics")
 
-    // If you need other Firebase products, add them here
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.0.20"))
+
+    implementation("androidx.multidex:multidex:2.0.1") // Explicit multidex
+    
+    // Add desugaring library
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }
 
 val keystoreProperties = Properties()
@@ -27,10 +32,13 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.methodist.youthmind"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 35
     ndkVersion = "27.0.12077973"
 
     compileOptions {
+
+        isCoreLibraryDesugaringEnabled = true
+        
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
@@ -48,6 +56,7 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        multiDexEnabled = true
     }
 
     signingConfigs {

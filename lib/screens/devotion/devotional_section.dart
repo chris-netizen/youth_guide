@@ -6,30 +6,33 @@ import 'package:youth_guide/utils/app_colors.dart';
 
 class DevotionalSection extends StatelessWidget {
   final String title;
-  final String content;
+  final String? content;
   final String? reference;
+  final String? bibleVerse;
   final double fontSize;
   final bool isQuote;
   final bool isPrayer;
   final VoidCallback? onTap;
+  final VoidCallback? onVerseTapped;
 
   final bool isDarkMode;
 
   const DevotionalSection({
     super.key,
     required this.title,
-    required this.content,
+    this.content,
+    this.bibleVerse,
     this.reference,
     required this.fontSize,
     this.isQuote = false,
     this.isPrayer = false,
     this.onTap,
+    this.onVerseTapped,
     required this.isDarkMode,
   });
 
   @override
   Widget build(BuildContext context) {
-    print('reference: $reference');
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
       child: Column(
@@ -64,18 +67,37 @@ class DevotionalSection extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  content,
-                  style: GoogleFonts.merriweatherSans(
-                    fontSize: fontSize,
-                    height: 1.6,
-                    color:
-                        isDarkMode
-                            ? AppColors.appGreyColor
-                            : AppColors.appBlackColor.withOpacity(0.7),
-                    fontStyle: isQuote ? FontStyle.italic : FontStyle.normal,
-                  ),
-                ),
+                bibleVerse != null
+                    ? GestureDetector(
+                      onTap: onVerseTapped,
+                      child: Text(
+                        bibleVerse!,
+                        style: GoogleFonts.merriweatherSans(
+                          fontSize: fontSize,
+                          height: 1.6,
+                          decoration: TextDecoration.underline,
+                          color:
+                              isDarkMode
+                                  ? AppColors.appGreyColor
+                                  : AppColors.appBlackColor.withOpacity(0.7),
+                          fontStyle:
+                              isQuote ? FontStyle.italic : FontStyle.normal,
+                        ),
+                      ),
+                    )
+                    : Text(
+                      content ?? '',
+                      style: GoogleFonts.merriweatherSans(
+                        fontSize: fontSize,
+                        height: 1.6,
+                        color:
+                            isDarkMode
+                                ? AppColors.appGreyColor
+                                : AppColors.appBlackColor.withOpacity(0.7),
+                        fontStyle:
+                            isQuote ? FontStyle.italic : FontStyle.normal,
+                      ),
+                    ),
                 if (reference != null && reference!.isNotEmpty) ...[
                   GestureDetector(
                     onTap: onTap,
