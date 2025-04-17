@@ -28,32 +28,32 @@ class BibleService {
     String book,
     int chapter,
   ) async {
-    final db = await BibleDatabase.database;
-    return await db.transaction((txn) async {
-      final results = await txn.query(
+    try {
+      final db = await BibleDatabase.database;
+      final results = await db.query(
         'verses',
         columns: ['version', 'book', 'chapter', 'verse', 'text'],
         where: 'version = ? AND book = ? AND chapter = ?',
         whereArgs: [version, book, chapter],
         orderBy: 'verse ASC',
-        // Ensure uniqueness at the database level
         distinct: true,
       );
       return results;
-    });
+    } catch (e) {
+      debugPrint('Error fetching chapter $book $chapter ($version): $e');
+      return [];
+    }
   }
 
   Future<List<Map<String, dynamic>>> getVerseFromReference(
     String reference,
     String version,
   ) async {
-    final db = await BibleDatabase.database;
-    return await db.transaction((txn) async {
-      // Split reference into book and chapter:verse parts
+    try {
+      final db = await BibleDatabase.database;
       final parts = reference.split(RegExp(r'\s*:\s*'));
       if (parts.length != 2) return [];
 
-      // Split the first part into book name and chapter
       final verseParts = parts[0].trim().split(' ');
       if (verseParts.isEmpty) return [];
 
@@ -61,7 +61,6 @@ class BibleService {
       final bookInput =
           verseParts.sublist(0, verseParts.length - 1).join(' ').trim();
 
-      // Parse verse part for single verse or range
       final versePart = parts[1].trim();
       int startVerse = 1;
       int? endVerse;
@@ -76,19 +75,21 @@ class BibleService {
         startVerse = int.tryParse(versePart) ?? 1;
       }
 
-      // Try exact book match first, then prefix match
       String? book;
-      var books = await txn.rawQuery(
-        'SELECT book FROM books WHERE version = ? AND book = ?',
-        [version, bookInput],
+      var books = await db.query(
+        'books',
+        columns: ['book'],
+        where: 'version = ? AND book = ?',
+        whereArgs: [version, bookInput],
       );
       if (books.isNotEmpty) {
         book = books.first['book'] as String;
       } else {
-        // Fallback to prefix match
-        books = await txn.rawQuery(
-          'SELECT book FROM books WHERE version = ? AND book LIKE ?',
-          [version, '$bookInput%'],
+        books = await db.query(
+          'books',
+          columns: ['book'],
+          where: 'version = ? AND book LIKE ?',
+          whereArgs: [version, '$bookInput%'],
         );
         if (books.length == 1) {
           book = books.first['book'] as String;
@@ -97,10 +98,9 @@ class BibleService {
 
       if (book == null) return [];
 
-      // Query the verse(s)
       List<Map<String, dynamic>> results;
       if (endVerse != null && endVerse >= startVerse) {
-        results = await txn.query(
+        results = await db.query(
           'verses',
           columns: ['version', 'book', 'chapter', 'verse', 'text'],
           where:
@@ -110,7 +110,7 @@ class BibleService {
           distinct: true,
         );
       } else {
-        results = await txn.query(
+        results = await db.query(
           'verses',
           columns: ['version', 'book', 'chapter', 'verse', 'text'],
           where: 'version = ? AND book = ? AND chapter = ? AND verse = ?',
@@ -118,8 +118,10 @@ class BibleService {
           distinct: true,
         );
       }
-
       return results;
-    });
+    } catch (e) {
+      debugPrint('Error fetching verse $reference ($version): $e');
+      return [];
+    }
   }
 }

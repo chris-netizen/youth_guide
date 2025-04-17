@@ -34,8 +34,9 @@ class BibleDatabase {
         PRIMARY KEY (version, book)
       )
     ''');
+    await db.execute('CREATE INDEX idx_version_book ON verses(version, book);');
     await db.execute(
-      'CREATE INDEX idx_version_book_chapter_verse ON verses(version, book, chapter, verse);',
+      'CREATE INDEX idx_version_book_chapter ON verses(version, book, chapter);',
     );
   }
 
@@ -53,26 +54,32 @@ class BibleDatabase {
         )
       ''');
       await db.execute(
-        'CREATE INDEX idx_version_book_chapter_verse ON verses(version, book, chapter, verse);',
+        'CREATE INDEX idx_version_book ON verses(version, book);',
       );
-      // Populate books table from verses
-      final versions = await db.rawQuery('SELECT DISTINCT version FROM verses');
-      for (var versionRow in versions) {
-        final version = versionRow['version'] as String;
-        final books = await db.rawQuery(
-          'SELECT DISTINCT book FROM verses WHERE version = ? ORDER BY book ASC',
-          [version],
+      await db.execute(
+        'CREATE INDEX idx_version_book_chapter ON verses(version, book, chapter);',
+      );
+      await _populateBooksTable(db);
+    }
+  }
+
+  static Future<void> _populateBooksTable(Database db) async {
+    final versions = await db.rawQuery('SELECT DISTINCT version FROM verses');
+    for (var versionRow in versions) {
+      final version = versionRow['version'] as String;
+      final books = await db.rawQuery(
+        'SELECT DISTINCT book FROM verses WHERE version = ? ORDER BY book ASC',
+        [version],
+      );
+      final batch = db.batch();
+      for (var bookRow in books) {
+        final book = bookRow['book'] as String;
+        batch.rawInsert(
+          'INSERT OR IGNORE INTO books (version, book) VALUES (?, ?)',
+          [version, book],
         );
-        final batch = db.batch();
-        for (var bookRow in books) {
-          final book = bookRow['book'] as String;
-          batch.rawInsert(
-            'INSERT OR IGNORE INTO books (version, book) VALUES (?, ?)',
-            [version, book],
-          );
-        }
-        await batch.commit();
       }
+      await batch.commit();
     }
   }
 

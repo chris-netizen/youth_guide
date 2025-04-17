@@ -1,3 +1,4 @@
+// chapter_screen.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -20,6 +21,7 @@ class ChapterScreen extends StatefulWidget {
 class _ChapterScreenState extends State<ChapterScreen> {
   late final ScrollController _scrollController;
   static final Map<String, List<int>> _chapterCache = {};
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -39,28 +41,38 @@ class _ChapterScreenState extends State<ChapterScreen> {
       return _chapterCache[cacheKey]!;
     }
 
-    final db = await BibleDatabase.database;
-    return await db.transaction((txn) async {
-      final results = await txn.rawQuery(
-        'SELECT DISTINCT chapter FROM verses WHERE version = ? AND book = ? ORDER BY chapter ASC',
-        [widget.version, widget.book],
+    try {
+      final db = await BibleDatabase.database;
+      final results = await db.query(
+        'verses',
+        columns: ['chapter'],
+        where: 'version = ? AND book = ?',
+        whereArgs: [widget.version, widget.book],
+        orderBy: 'chapter ASC',
+        distinct: true,
       );
       final chapters = results.map((e) => e['chapter'] as int).toList();
       _chapterCache[cacheKey] = chapters;
       return chapters;
-    });
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Failed to load chapters: $e';
+      });
+      return [];
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final fontSize = Provider.of<FontSizeProvider>(context).fontSize;
+
     return Scaffold(
       appBar: AppBar(title: Text('${widget.book} - Chapters')),
       body: FutureBuilder<List<int>>(
         future: fetchChapters(),
         builder: (context, snapshot) {
-          if (!snapshot.hasData) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
               child: CircularProgressIndicator(
                 color:
@@ -71,7 +83,37 @@ class _ChapterScreenState extends State<ChapterScreen> {
             );
           }
 
-          final chapters = snapshot.data!;
+          if (snapshot.hasError || _errorMessage != null) {
+            return Center(
+              child: Text(
+                _errorMessage ?? 'An error occurred.',
+                style: GoogleFonts.lora(
+                  fontSize: fontSize,
+                  color:
+                      themeProvider.isDarkMode
+                          ? AppColors.appGreyColor
+                          : AppColors.appBlackColor.withAlpha(200),
+                ),
+              ),
+            );
+          }
+
+          final chapters = snapshot.data ?? [];
+          if (chapters.isEmpty) {
+            return Center(
+              child: Text(
+                'No chapters found.',
+                style: GoogleFonts.lora(
+                  fontSize: fontSize,
+                  color:
+                      themeProvider.isDarkMode
+                          ? AppColors.appGreyColor
+                          : AppColors.appBlackColor.withAlpha(200),
+                ),
+              ),
+            );
+          }
+
           return Scrollbar(
             thumbVisibility: true,
             thickness: 6,

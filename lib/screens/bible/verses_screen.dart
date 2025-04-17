@@ -1,3 +1,4 @@
+// verses_screen.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -27,13 +28,14 @@ class _VersesScreenState extends State<VersesScreen> {
   late int _currentChapter;
   static final Map<String, List<Map<String, dynamic>>> _verseCache = {};
   List<int>? _chapters;
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
     _currentChapter = widget.chapter;
-    _pageController = PageController(initialPage: _currentChapter);
-    _preloadChapters();
+    _pageController = PageController(initialPage: _currentChapter - 1);
+    _loadChapters();
   }
 
   @override
@@ -42,27 +44,25 @@ class _VersesScreenState extends State<VersesScreen> {
     super.dispose();
   }
 
-  Future<void> _preloadChapters() async {
-    final db = await BibleDatabase.database;
-    final results = await db.transaction((txn) async {
-      return await txn.rawQuery(
-        'SELECT DISTINCT chapter FROM verses WHERE version = ? AND book = ? ORDER BY chapter ASC',
-        [widget.version, widget.book],
+  Future<void> _loadChapters() async {
+    try {
+      final db = await BibleDatabase.database;
+      final results = await db.query(
+        'verses',
+        columns: ['chapter'],
+        where: 'version = ? AND book = ?',
+        whereArgs: [widget.version, widget.book],
+        orderBy: 'chapter ASC',
+        distinct: true,
       );
-    });
-    setState(() {
-      _chapters = results.map((e) => e['chapter'] as int).toList();
-    });
-
-    // Preload current and adjacent chapters
-    final chaptersToLoad = [
-      _currentChapter,
-      if (_currentChapter > 1) _currentChapter - 1,
-      if (_chapters != null && _currentChapter < _chapters!.last)
-        _currentChapter + 1,
-    ];
-    for (var chapter in chaptersToLoad) {
-      await fetchVerses(chapter);
+      setState(() {
+        _chapters = results.map((e) => e['chapter'] as int).toList();
+      });
+      await fetchVerses(_currentChapter);
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Failed to load chapters: $e';
+      });
     }
   }
 
@@ -72,9 +72,9 @@ class _VersesScreenState extends State<VersesScreen> {
       return _verseCache[cacheKey]!;
     }
 
-    final db = await BibleDatabase.database;
-    final verses = await db.transaction((txn) async {
-      return await txn.query(
+    try {
+      final db = await BibleDatabase.database;
+      final verses = await db.query(
         'verses',
         columns: ['version', 'book', 'chapter', 'verse', 'text'],
         where: 'version = ? AND book = ? AND chapter = ?',
@@ -82,14 +82,17 @@ class _VersesScreenState extends State<VersesScreen> {
         orderBy: 'verse ASC',
         distinct: true,
       );
-    });
-
-    _verseCache[cacheKey] = verses;
-    // Limit cache size to prevent memory issues
-    if (_verseCache.length > 10) {
-      _verseCache.remove(_verseCache.keys.first);
+      _verseCache[cacheKey] = verses;
+      if (_verseCache.length > 10) {
+        _verseCache.remove(_verseCache.keys.first);
+      }
+      return verses;
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Failed to load verses: $e';
+      });
+      return [];
     }
-    return verses;
   }
 
   @override
@@ -109,29 +112,33 @@ class _VersesScreenState extends State<VersesScreen> {
                           : AppColors.appBlackColor.withAlpha(200),
                 ),
               )
+              : _errorMessage != null
+              ? Center(
+                child: Text(
+                  _errorMessage!,
+                  style: GoogleFonts.lora(
+                    fontSize: fontSize,
+                    color:
+                        themeProvider.isDarkMode
+                            ? AppColors.appGreyColor
+                            : AppColors.appBlackColor.withAlpha(200),
+                  ),
+                ),
+              )
               : PageView.builder(
                 controller: _pageController,
                 onPageChanged: (page) {
                   setState(() {
-                    _currentChapter = page;
+                    _currentChapter = _chapters![page];
                   });
-                  // Preload adjacent chapters
-                  if (_chapters != null) {
-                    final chaptersToLoad = [
-                      if (page > 1) page - 1,
-                      if (page < _chapters!.last) page + 1,
-                    ];
-                    for (var chapter in chaptersToLoad) {
-                      fetchVerses(chapter);
-                    }
-                  }
+                  fetchVerses(_currentChapter);
                 },
                 itemCount: _chapters!.length,
                 itemBuilder: (context, index) {
                   return FutureBuilder<List<Map<String, dynamic>>>(
-                    future: fetchVerses(index),
+                    future: fetchVerses(_chapters![index]),
                     builder: (context, snapshot) {
-                      if (!snapshot.hasData) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
                         return Center(
                           child: CircularProgressIndicator(
                             color:
@@ -142,7 +149,37 @@ class _VersesScreenState extends State<VersesScreen> {
                         );
                       }
 
+                      if (snapshot.hasError || !snapshot.hasData) {
+                        return Center(
+                          child: Text(
+                            'Failed to load verses.',
+                            style: GoogleFonts.lora(
+                              fontSize: fontSize,
+                              color:
+                                  themeProvider.isDarkMode
+                                      ? AppColors.appGreyColor
+                                      : AppColors.appBlackColor.withAlpha(200),
+                            ),
+                          ),
+                        );
+                      }
+
                       final verses = snapshot.data!;
+                      if (verses.isEmpty) {
+                        return Center(
+                          child: Text(
+                            'No verses found.',
+                            style: GoogleFonts.lora(
+                              fontSize: fontSize,
+                              color:
+                                  themeProvider.isDarkMode
+                                      ? AppColors.appGreyColor
+                                      : AppColors.appBlackColor.withAlpha(200),
+                            ),
+                          ),
+                        );
+                      }
+
                       return ListView.builder(
                         padding: const EdgeInsets.all(8),
                         itemCount: verses.length,

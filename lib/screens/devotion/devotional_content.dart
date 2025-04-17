@@ -1,7 +1,4 @@
 // ignore_for_file: use_build_context_synchronously
-
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -282,61 +279,103 @@ class DevotionalContent extends StatelessWidget {
                   fontSize: fontSize,
                   onVerseTapped: () async {
                     if (dailyDevotional['text'] != null) {
-                      final verseData = await BibleService()
-                          .getVerseFromReference(
-                            dailyDevotional['text'],
-                            version,
-                          );
-
-                      if (verseData.isNotEmpty) {
-                        showModalBottomSheet(
-                          context: context,
-                          backgroundColor:
-                              themeProvider.isDarkMode
-                                  ? AppColors.appGoldColor
-                                  : AppColors.appGreyColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.vertical(
-                              top: Radius.circular(16),
-                            ),
+                      showModalBottomSheet(
+                        context: context,
+                        backgroundColor:
+                            themeProvider.isDarkMode
+                                ? AppColors.appGoldColor
+                                : AppColors.appGreyColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(16),
                           ),
-                          builder:
-                              (_) => SingleChildScrollView(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children:
-                                        verseData.map((verse) {
-                                          log('$verseData');
-                                          return Padding(
-                                            padding: const EdgeInsets.only(
-                                              bottom: 8.0,
-                                            ),
-                                            child: Text(
-                                              '${verse['book']} ${verse['chapter']}:${verse['verse']} - ${verse['text']}',
-                                              style:
-                                                  GoogleFonts.merriweatherSans(
-                                                    fontSize: fontSize,
-                                                    color:
-                                                        themeProvider.isDarkMode
-                                                            ? AppColors
-                                                                .appBlackColor
-                                                                .withAlpha(200)
-                                                            : AppColors
-                                                                .appBlackColor
-                                                                .withAlpha(200),
-                                                  ),
-                                            ),
-                                          );
-                                        }).toList(),
-                                  ),
+                        ),
+                        isScrollControlled: true,
+                        builder: (context) {
+                          return DraggableScrollableSheet(
+                            expand: false,
+                            initialChildSize: 0.5,
+                            minChildSize: 0.3,
+                            maxChildSize: 0.9,
+                            builder: (context, scrollController) {
+                              return FutureBuilder<List<Map<String, dynamic>>>(
+                                future: BibleService().getVerseFromReference(
+                                  dailyDevotional['text'],
+                                  version,
                                 ),
-                              ),
-                        );
-                      }
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return Padding(
+                                      padding: const EdgeInsets.all(24.0),
+                                      child: Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                    );
+                                  }
+
+                                  if (snapshot.hasError ||
+                                      !snapshot.hasData ||
+                                      snapshot.data!.isEmpty) {
+                                    return Padding(
+                                      padding: const EdgeInsets.all(24.0),
+                                      child: Text(
+                                        "Couldn't load verse. Please try again.",
+                                        style: TextStyle(
+                                          fontSize: fontSize,
+                                          color:
+                                              themeProvider.isDarkMode
+                                                  ? AppColors.appBlackColor
+                                                  : AppColors.appBlackColor,
+                                        ),
+                                      ),
+                                    );
+                                  }
+
+                                  final verseData = snapshot.data!;
+
+                                  return SingleChildScrollView(
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children:
+                                          verseData.map((verse) {
+                                            return Padding(
+                                              padding: const EdgeInsets.only(
+                                                bottom: 8.0,
+                                              ),
+                                              child: Text(
+                                                '${verse['book']} ${verse['chapter']}:${verse['verse']} - ${verse['text']}',
+                                                style:
+                                                    GoogleFonts.merriweatherSans(
+                                                      fontSize: fontSize,
+                                                      color:
+                                                          themeProvider
+                                                                  .isDarkMode
+                                                              ? AppColors
+                                                                  .appBlackColor
+                                                                  .withAlpha(
+                                                                    200,
+                                                                  )
+                                                              : AppColors
+                                                                  .appBlackColor
+                                                                  .withAlpha(
+                                                                    200,
+                                                                  ),
+                                                    ),
+                                              ),
+                                            );
+                                          }).toList(),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          );
+                        },
+                      );
                     }
                   },
                   isDarkMode: themeProvider.isDarkMode,

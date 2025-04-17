@@ -85,7 +85,7 @@ class DevotionalSection extends StatelessWidget {
                         ),
                       ),
                     )
-                    : Text(
+                    : SelectableText(
                       content ?? '',
                       style: GoogleFonts.merriweatherSans(
                         fontSize: fontSize,

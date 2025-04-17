@@ -1,4 +1,4 @@
-import 'dart:async';
+// bible_screen.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -21,64 +21,61 @@ class _BibleScreenState extends State<BibleScreen> {
   List<String> _allBooks = [];
   List<String> _filteredBooks = [];
   bool _isLoading = true;
-  Timer? _debounce;
-  static final Map<String, List<String>> _bookCache = {};
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
-    final version =
-        Provider.of<LocalBibleProvider>(context, listen: false).selectedVersion;
-    if (mounted) {
-      fetchBooks(version);
-    }
+    _loadBooks();
   }
 
   @override
   void dispose() {
-    _debounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
 
-  Future<void> fetchBooks(String version) async {
-    if (_bookCache.containsKey(version)) {
+  Future<void> _loadBooks() async {
+    try {
+      final version =
+          Provider.of<LocalBibleProvider>(
+            context,
+            listen: false,
+          ).selectedVersion;
+      final db = await BibleDatabase.database;
+      final results = await db.query(
+        'books',
+        columns: ['book'],
+        where: 'version = ?',
+        whereArgs: [version],
+        orderBy: 'book ASC',
+        distinct: true,
+      );
       setState(() {
-        _allBooks = _bookCache[version]!;
+        _allBooks = results.map((e) => e['book'] as String).toList();
         _filteredBooks = List.from(_allBooks);
         _isLoading = false;
       });
-      return;
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Failed to load books: $e';
+      });
     }
-
-    final db = await BibleDatabase.database;
-    final results = await db.rawQuery(
-      'SELECT book FROM books WHERE version = ? ORDER BY book ASC',
-      [version],
-    );
-    setState(() {
-      _allBooks = results.map((e) => e['book'] as String).toList();
-      _bookCache[version] = _allBooks;
-      _filteredBooks = List.from(_allBooks);
-      _isLoading = false;
-    });
   }
 
   void _filterBooks(String query) {
-    if (_debounce?.isActive ?? false) _debounce!.cancel();
-    _debounce = Timer(const Duration(milliseconds: 300), () {
-      setState(() {
-        if (query.isEmpty) {
-          _filteredBooks = List.from(_allBooks);
-        } else {
-          _filteredBooks =
-              _allBooks
-                  .where(
-                    (book) => book.toLowerCase().contains(query.toLowerCase()),
-                  )
-                  .toList();
-        }
-      });
+    setState(() {
+      if (query.isEmpty) {
+        _filteredBooks = List.from(_allBooks);
+      } else {
+        _filteredBooks =
+            _allBooks
+                .where(
+                  (book) => book.toLowerCase().contains(query.toLowerCase()),
+                )
+                .toList();
+      }
     });
   }
 
@@ -114,6 +111,19 @@ class _BibleScreenState extends State<BibleScreen> {
                       themeProvider.isDarkMode
                           ? AppColors.appGreyColor
                           : AppColors.appBlackColor.withAlpha(200),
+                ),
+              )
+              : _errorMessage != null
+              ? Center(
+                child: Text(
+                  _errorMessage!,
+                  style: GoogleFonts.lora(
+                    fontSize: fontSize,
+                    color:
+                        themeProvider.isDarkMode
+                            ? AppColors.appGreyColor
+                            : AppColors.appBlackColor.withAlpha(200),
+                  ),
                 ),
               )
               : Column(
