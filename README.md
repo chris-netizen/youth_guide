@@ -1,16 +1,6 @@
-# youth_guide
+# Methodist Churc Nigeria Young mind Devotional App
 
-A new Flutter project.
+This is a devetional application developed in flutter and deployed to playstore.
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Although it is in active development, we hope to deploy to IOS soon as well.
+Find link to the playstore here below :- [https://play.google.com/store/apps/details?id=com.methodist.youthmind]
