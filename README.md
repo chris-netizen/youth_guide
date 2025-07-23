@@ -1,4 +1,4 @@
-# Methodist Churc Nigeria Young mind Devotional App
+# Methodist Church Nigeria Young mind Devotional App
 
 This is a devetional application developed in flutter and deployed to playstore.
 
